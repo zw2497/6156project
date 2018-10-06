@@ -10,19 +10,19 @@
 * Lin Bai lb3161
 
 ## Github Account
-zzaustc@163.com
-zw2497
-LinBai023
-az196560
-zxw018018
+* zzaustc@163.com
+* zw2497
+* LinBai023
+* az196560
+* zxw018018
 
 ## Brief Description
+### Framework
 * Based on Node.js
 * React
 
 ## Function
-* facebook/ email log in
-* Log out
+* Facebook/Email log in/out
 * Update profile
 * Register
 * Https
