@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Profile{% endblock %}</h1>
+    <a class="action" href="{{ url_for('blog.index') }}">Home Page</a>
+{% endblock %}
+
+{% block content %}
+  <ul>
+      <li><span>email: {{ profile['email'] }}</span>
+      <li><span>lastname: {{ profile['lastname'] }}</span>
+      <li><span>firstname: {{ profile['firstname'] }}</span>
+      <li><span>description: {{ profile['description'] }}</span>
+  </ul>
+     <a class="action" href="{{ url_for('blog.profileupdate', id=g.user['id']) }}">Update Profile</a>
+{% endblock %}

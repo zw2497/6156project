@@ -45,12 +45,16 @@ def create():
     return render_template('blog/create.html')
 
 def get_post(id, check_author=True):
+    admin = 1
     post = get_db().execute(
         'SELECT p.id, title, body, created, author_id, username'
         ' FROM post p JOIN user u ON p.author_id = u.id'
         ' WHERE p.id = ?',
         (id,)
     ).fetchone()
+
+    if g.user['id'] == admin:
+        return post
 
     if post is None:
         abort(404, "Post id {0} doesn't exist.".format(id))
@@ -59,6 +63,7 @@ def get_post(id, check_author=True):
         abort(403)
 
     return post
+
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
 @login_required
@@ -87,6 +92,7 @@ def update(id):
 
     return render_template('blog/update.html', post=post)
 
+
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
@@ -95,3 +101,52 @@ def delete(id):
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+
+
+@bp.route('/<int:id>/profile')
+@login_required
+def profile(id):
+    db = get_db()
+    profile = db.execute('SELECT * FROM profile AS P WHERE user_id = ?', (id,)).fetchone()
+    return render_template('blog/profile.html', profile=profile)
+
+
+@bp.route('/<int:id>/profileupdate', methods=('GET', 'POST'))
+@login_required
+def profileupdate(id):
+    if request.method == 'POST':
+        email = request.form['email']
+        lastname = request.form['lastname']
+        firstname = request.form['firstname']
+        description = request.form['description']
+        error = None
+        if not email:
+            error = 'Email is required.'
+        if not lastname:
+            error = 'Lastname is required.'
+        if not firstname:
+            error = 'Firstname is required.'
+        if not description:
+            error = 'Description is required.'
+
+        if error is not None:
+            flash(error)
+        else:
+            db = get_db()
+            profile = db.execute('SELECT * FROM profile AS P WHERE user_id = ?', (id,)).fetchone()
+            if not profile :
+                db.execute(
+                    'INSERT INTO profile (user_id, email, description, firstname, lastname)'
+                    ' VALUES (?, ?, ?, ?, ?)',
+                    (g.user['id'], email, description, firstname, lastname)
+                )
+            else:
+                db.execute(
+                    'UPDATE profile SET email=?, description=?, firstname=?, lastname=?'
+                    ' WHERE id=?',
+                    (email, description, firstname, lastname, id)
+                )
+            db.commit()
+            return redirect(url_for('blog.profile', id =g.user['id'] ))
+    return render_template('blog/profileupdate.html')
+
