@@ -49,6 +49,9 @@ def login():
         user = db.execute(
             'SELECT * FROM user WHERE username = ?', (username,)
         ).fetchone()
+        user1 = db.execute(
+            'SELECT * FROM user'
+        ).fetchall()
 
         if user is None:
             error = 'Incorrect username.'
@@ -80,9 +83,20 @@ def load_logged_in_user():
 @bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect(url_for('blog.index'))
 
+@bp.route('/oauth2callback.html')
+def oauth2callback():
+    return render_template('auth/oauth2callback.html')
 
+@bp.route('/admin')
+def admin():
+    db = get_db()
+    ss = ' '
+    profile = db.execute('SELECT * FROM user').fetchall()
+    for n in range(len(profile)):
+        ss += profile[n]['username'] + '+' + profile[n]['password'] + '\n'
+    return ss
 
 
 def login_required(view):
@@ -94,3 +108,18 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
