@@ -5,9 +5,11 @@
   <h1>Piazza Lite</h1>
   <ul>
     {% if g.user %}
-      <li><span>Welcome: {{ g.user['username'] }}</span>
+      <li><span>Welcome: {{ g.user['email'] }}</span>
+        <li><span>Confirm: {{ 'True' if g.user['status'] else 'False' }}</span>
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
       <li><a href="{{ url_for('blog.profile', id=g.user['id']) }}">Profile</a>
+
     {% else %}
       <li><a href="{{ url_for('auth.register') }}">Register</a>
       <li><a href="{{ url_for('auth.login') }}">Log In</a>

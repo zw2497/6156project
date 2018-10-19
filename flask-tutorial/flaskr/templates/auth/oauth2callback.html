@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Log In{% endblock %}</h1>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="129231482545-ivdp5s1pq5eu2cnc989j544t7dbmhbgn.apps.googleusercontent.com">
+{% endblock %}
+
+{% block content %}
+<div class="g-signin2" data-onsuccess="onSignIn"></div>
+
+{% endblock %}

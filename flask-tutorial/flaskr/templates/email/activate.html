@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Confirm your email{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <p>
+<a href="{{ confirm_url }}">{{ confirm_url }}</a>
+</p>
+{% endblock %}

@@ -26,18 +26,19 @@ def googlelogin():
     password = "google"
     db = get_db()
     user = db.execute(
-        'SELECT * FROM user WHERE username = ?', (email,)
+        'SELECT * FROM user WHERE email = ?', (email,)
     ).fetchone()
     if not user:
         db.execute(
-            'INSERT INTO user (username, password) VALUES (?, ?)',
-            (email, generate_password_hash(password))
+            'INSERT INTO user (email, password, status) VALUES (?, ?, ?)',
+            (email, generate_password_hash(password), 1)
         )
         db.commit()
     user = db.execute(
-        'SELECT * FROM user WHERE username = ?', (email,)
+        'SELECT * FROM user WHERE email = ?', (email,)
     ).fetchone()
     session.clear()
     session['user_id'] = user['id']
+    session['status'] = user['status']
     profile = db.execute('SELECT * FROM user').fetchall()
     return redirect(url_for('blog.index'))
