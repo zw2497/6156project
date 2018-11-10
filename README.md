@@ -1,5 +1,4 @@
 # QALite
----
 ## Introduction
 QALite is a forum for **Qestions** and **Answers**. This website uses **Event-centric model** and breaks a **Monolith** into **Microservices** which makes it more convenient for more groups to collaborate. 
 
