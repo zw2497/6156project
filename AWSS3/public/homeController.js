@@ -10,8 +10,7 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
     $scope.login = 1;
     $scope.profile = null;
     $scope.profiledetail = null;
-    //local1 = "http://6156backend.us-east-2.elasticbeanstalk.com"
-    local1 = "http://127.0.0.1:5000"
+    local1 = "http://6156.us-east-2.elasticbeanstalk.com"
 
     console.log("Controller loaded!")
     $scope.driveLogin = function() {
@@ -100,7 +99,7 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
                 $scope.login = null;
                 $scope.profile = null;
                 $scope.profiledetail = 1;
-                $scope.customerInfo = result.data;
+                $scope.customerInfo = result.data.body;
                 console.log("success")
             }, function(result) {
                 console.log("fail")
@@ -108,19 +107,42 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
                 console.log("what?")
             }
             );
+    }
 
-        // $http.get(url, config).then(
-        //     function onSuccess(response) {
-        //         console.log("success")
-        // }, function onError(response) {
-        //         console.log(response)
-        // }, function what(response) {
-        //         console.log("what?")
-        // });
-
+    $scope.toupdateprofile = function() {
+        console.log("update")
+        $scope.profiledetail = 0;
+        $scope.update = 1;
 
     }
 
+    $scope.updateprofile = function() {
+        req = {
+            phone: $scope.phone,
+            address: $scope.address
+        };
 
+        url = "https://kp1extjemk.execute-api.us-east-2.amazonaws.com/v1/6156task2";
+
+        let claim = $window.sessionStorage.getItem("credentials");
+        let config = {};
+        config.headers = { "credentials": claim, 'Content-Type': 'application/json'};
+
+        $http.post(url, req, config).then(
+            function(result) {
+                console.log("Result = " + JSON.stringify(result));
+                $scope.res = result.data.body;
+                if (result.data.code == 1) {
+                    $scope.profile = 1;
+                    $scope.update = 0;
+                }
+            },
+            function(error) {
+                console.log("Result = " + JSON.stringify(error));
+            }
+
+        );
+
+    }
 
 });

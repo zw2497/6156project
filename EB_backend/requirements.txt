@@ -3,6 +3,7 @@ certifi==2018.8.24
 chardet==3.0.4
 Click==7.0
 Flask==1.0.2
+Flask-Cors==3.0.6
 Flask-Dance==1.1.0
 google-api-python-client==1.7.4
 google-auth==1.5.1
@@ -18,7 +19,7 @@ oauthlib==2.1.0
 pyasn1==0.4.4
 pyasn1-modules==0.2.2
 PyJWT==1.6.4
-requests==2.19.1
+requests==2.20.1
 requests-oauthlib==1.0.0
 rsa==4.0
 six==1.11.0

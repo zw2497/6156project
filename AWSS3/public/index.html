@@ -22,7 +22,7 @@
 
   <nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-dark bg-primary" style="background-color: #e3f2fd;">
     <div class="container">
-    <a class="navbar-brand" href="#">Piazza Lite</a>
+    <a class="navbar-brand" href="#">QALite</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -65,6 +65,7 @@
       <p class="mt-5 mb-3 text-muted">&copy; 2018-2019 E6156 Microservice</p>
     </form>
 
+    <!--get profile-->
     <form class="form-signin" ng-show="profile">
       <img class="mb-4" src="images/bootstrap-solid.svg" alt="" width="72" height="72">
       <h1 class="h3 mb-3 font-weight-normal">Profile</h1>
@@ -75,12 +76,40 @@
       <p class="mt-5 mb-3 text-muted">&copy; 2018-2019 E6156 Microservice</p>
     </form>
 
+    <!--profile display-->
     <form class="form-signin" ng-show="profiledetail">
       <img class="mb-4" src="images/bootstrap-solid.svg" alt="" width="72" height="72">
       <h1 class="h3 mb-3 font-weight-normal">Profile</h1>
       <div class="alert alert-primary" role="alert" ng-show="res" style = "word-wrap: break-word;">
         {{customerInfo}}
       </div>
+      <button class="btn btn-lg btn-primary btn-block" ng-click="toupdateprofile()">Update My Profile</button>
+      <p class="mt-5 mb-3 text-muted">&copy; 2018-2019 E6156 Microservice</p>
+    </form>
+
+
+    <!--update-->
+    <form class="form-profile" ng-show="update">
+      <img class="mb-4" src="images/bootstrap-solid.svg" alt="" width="72" height="72">
+      <h1 class="h3 mb-3 font-weight-normal">Profile Update</h1>
+      <div class="alert alert-primary" role="alert" ng-show="res" style = "word-wrap: break-word;">
+        {{customerInfo}}
+      </div>
+
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="inputGroup-sizing-default">Phone</span>
+        </div>
+        <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default" ng-model="phone">
+      </div>
+
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="inputGroup-sizing-default1">Address</span>
+        </div>
+        <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default" ng-model="address">
+      </div>
+
       <button class="btn btn-lg btn-primary btn-block" ng-click="updateprofile()">Update My Profile</button>
       <p class="mt-5 mb-3 text-muted">&copy; 2018-2019 E6156 Microservice</p>
     </form>

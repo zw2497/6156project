@@ -33,18 +33,16 @@ def create():
 
         if not title:
             error = 'Title is required.'
+            return jsonify(error=error, code = 0)
 
-        if error is not None:
-            flash(error)
-        else:
-            db = get_db()
-            db.execute(
-                'INSERT INTO post (title, body, author_id)'
-                ' VALUES (?, ?, ?)',
-                (title, body, g.user['id'])
-            )
-            db.commit()
-            return redirect(url_for('blog.index'))
+        db = get_db()
+        db.execute(
+            'INSERT INTO post (title, body, author_id)'
+            ' VALUES (?, ?, ?)',
+            (title, body, g.user['id'])
+        )
+        db.commit()
+        return jsonify(body="success", code = 0)
 
     return render_template('blog/create.html')
 
