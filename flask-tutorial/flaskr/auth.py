@@ -1,38 +1,42 @@
 import functools
-
+import jwt
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, Response, json
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.exceptions import abort
-
 from flaskr.db import get_db
-
 from .sms import Autoemail
-
 from itsdangerous import URLSafeTimedSerializer
+from flask_cors import cross_origin
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
-
 ts = URLSafeTimedSerializer("dev")
 
 @bp.route('/register', methods=('GET', 'POST'))
+@cross_origin()
 def register():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.json['email']
+        password = request.json['pw']
+        if (not email or not password) :
+            return jsonify(body = "Email or password is incorrect", code = 0)
+
         db = get_db()
         error = None
 
         if not email:
             error = 'email is required.'
+            return jsonify(body=error, code = 0)
         elif not password:
             error = 'Password is required.'
+            return jsonify(body=error, code = 0)
         elif db.execute(
             'SELECT id FROM user WHERE email = ?', (email,)
         ).fetchone() is not None:
-            error = 'User {} is already registered.'.format(email)
+            error = 'User: {} is already registered.'.format(email)
+            return jsonify(body=error, code = 0)
 
         if error is None:
             db.execute(
@@ -40,72 +44,43 @@ def register():
                 (email, generate_password_hash(password))
             )
             db.commit()
+        return jsonify(body="Register success", code = 1)
 
-            # Now we'll send the email confirmation link
-            subject = "Hello World"
-            token = ts.dumps(email, salt='dev')
-            confirm_url = url_for(
-                'auth.confirm_email',
-                token=token,
-                _external=True)
-            #html = "Your account confirmation link is: %s"
-            html = "hello world: %s" % (confirm_url)
-            confirmation = Autoemail(email, subject, html)
-            confirmation.send()
-
-
-
-            return redirect(url_for('auth.login'))
-        flash(error)
-
-    return render_template('auth/register.html')
 
 
 @bp.route('/login', methods=('GET', 'POST'))
+@cross_origin()
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.json['email']
+        password = request.json['pw']
+        if (not email or not password) :
+            return jsonify(body = "Email or password is incorrect", code = 0)
         db = get_db()
-        error = None
         user = db.execute(
-            'SELECT * FROM user WHERE email = ?', (email,)
-        ).fetchone()
-
+                     'SELECT * FROM user WHERE email = ?', (email,)
+                 ).fetchone()
         if user is None:
-            error = 'Incorrect email.'
-        elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
+            return jsonify(body = "Email or password is incorrect", code = 0)
 
-        if error is None:
-            session.clear()
-            session['user_id'] = user['id']
-            session['status'] = user['status']
-            return redirect(url_for('index'))
+        if (not check_password_hash(user['password'], password)) :
+            return jsonify(body="Email or password is incorrect", code = 0)
 
-        flash(error)
-
-    return render_template('auth/login.html')
-
-@bp.before_app_request
-def load_logged_in_user():
-    user_id = session.get('user_id')
-    status = session.get('status')
-
-    if user_id is None:
-        g.user = None
-    else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
-
-
-
-@bp.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('blog.index'))
-
+        try:
+            payload = {
+                        'user_id': user['id'],
+                        'email': user['email'],
+                        'status': user['status']
+                        }
+            token = jwt.encode(payload, 'dev', algorithm='HS256')
+        except Exception as e:
+            return jsonify(status = 401, msg = "invalid", code = 0)
+        else:
+            data =  {'authorization': "{}".format(token.decode()), "code" : 1}
+            js = json.dumps(data)
+            resp = Response(js, status=200, mimetype='application/json')
+            # resp.headers['qwert'] = token
+            return resp
 
 @bp.route('/confirm/<token>')
 def confirm_email(token):

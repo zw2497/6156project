@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for,json,jsonify
 )
 from werkzeug.exceptions import abort
 
@@ -16,7 +16,11 @@ def index():
         ' FROM post p JOIN user u ON p.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
-    return render_template('blog/index.html', posts=posts)
+    print(type(posts))
+    p = {}
+    for i,j in enumerate(posts):
+        p[i] = j['body']
+    return jsonify(posts = p)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
