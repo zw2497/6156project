@@ -27,7 +27,7 @@ def lambda_handler(event, context):
                                               }
                                               )
                         return {"statusCode": 200,
-                            "body": response['Item']
+                            "body": str(response['Item'])
                             }
             else:
                 return {
@@ -59,17 +59,16 @@ if event['httpMethod'] == 'POST':
                         item["id"] = int(payload["user_id"])
                         item["status"] = str(payload["status"])
                         item["profile"] = json.loads(event["body"])
-                        print(type(event["body"]))
                         response = table.put_item(Item = item)
                         return {"statusCode": 200,
-                            "body": str(type(json.loads(event["body"])))
+                            "body": event["body"]
                     }
                             else:
         return {
             "statusCode": 200,
                 "body": "No Authorization"
         }
-
+        
         else:
             return {
                 "statusCode": 200,
