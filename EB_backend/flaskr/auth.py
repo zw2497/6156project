@@ -10,6 +10,9 @@ from .sms import Autoemail
 from itsdangerous import URLSafeTimedSerializer
 from flask_cors import cross_origin
 
+from google.oauth2 import id_token
+from google.auth.transport import requests as requestgoogle
+
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 ts = URLSafeTimedSerializer("dev")
@@ -46,6 +49,66 @@ def register():
             db.commit()
         return jsonify(body="Register success", code = 1)
 
+@bp.route('/google', methods=('GET', 'POST'))
+@cross_origin()
+def google():
+    CLIENT_ID = "1076764154881-jq0lgjdbeje9b5tsucimo3l8p48uen0v.apps.googleusercontent.com"
+    token = request.form['idtoken']
+    try:
+        # Specify the CLIENT_ID of the app that accesses the backend:
+        idinfo = id_token.verify_oauth2_token(token, requestgoogle.Request(), CLIENT_ID)
+
+        # Or, if multiple clients access the backend server:
+        # idinfo = id_token.verify_oauth2_token(token, requests.Request())
+        # if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
+        #     raise ValueError('Could not verify audience.')
+
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise ValueError('Wrong issuer.')
+
+        # If auth request is from a G Suite domain:
+        # if idinfo['hd'] != GSUITE_DOMAIN_NAME:
+        #     raise ValueError('Wrong hosted domain.')
+
+        # ID token is valid. Get the user's Google Account ID from the decoded token.
+        email = idinfo['email']
+        password = "googlezw2497"
+        '''
+        check if it exist this email
+        '''
+        db = get_db()
+        user = db.execute(
+            'SELECT * FROM user WHERE email = ?', (email,)
+        ).fetchone()
+
+        if not user:
+            db.execute(
+                'INSERT INTO user (email, password, status) VALUES (?, ?, ?)',
+                (email, generate_password_hash(password), 1)
+            )
+            db.commit()
+
+        user = db.execute(
+            'SELECT * FROM user WHERE email = ?', (email,)
+        ).fetchone()
+
+        try:
+            payload = {
+                        'user_id': user['id'],
+                        'email': user['email']
+                        }
+            token = jwt.encode(payload, 'dev', algorithm='HS256')
+        except Exception as e:
+            return jsonify(status = 401, msg = "invalid", code = 0)
+        else:
+            data =  {'authorization': "{}".format(token.decode()),"status" : 1, "code" : 1}
+            js = json.dumps(data)
+            resp = Response(js, status=200, mimetype='application/json')
+            return resp
+
+    except ValueError:
+        # Invalid token
+        jsonify(status=401, msg="invalid", code=0)
 
 
 @bp.route('/login', methods=('GET', 'POST'))

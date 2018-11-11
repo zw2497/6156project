@@ -7,41 +7,48 @@
     <meta name="author" content="">
     <link rel="icon" href="images/favicon.ico">
 
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="1076764154881-jq0lgjdbeje9b5tsucimo3l8p48uen0v.apps.googleusercontent.com">
+
     <title>Microservice</title>
 
-    <!-- Bootstrap core CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular-route.js"></script>
     <script src="homeController.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
 
     <!-- Custom styles for this template -->
     <link href="stylesheets/signin.css" rel="stylesheet">
+
+
   </head>
 
-  <nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-dark bg-primary" style="background-color: #e3f2fd;">
-    <div class="container">
-    <a class="navbar-brand" href="#">QALite</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top" style="background-color: #e3f2fd;">
+    <a class="navbar-brand" href="./">QALite</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <div class="collapse navbar-collapse" id="navbar">
+    <div class="collapse navbar-collapse" id="navbar" ng-controller="myCtrl">
       <ul class="navbar-nav mr-auto">
 
         <li class="nav-item active">
-          <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+          <a class="nav-link"  ng-click="reloadRoute()">Home <span class="sr-only">(current)</span></a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link" href="#">Link</a>
+        <li class="nav-item active">
+          <a class="nav-link" ng-click="logout()" ng-show="!login">Logout</a>
         </li>
 
       </ul>
     </div>
-    </div>
   </nav>
+
 
   <body ng-app="CustomerApp" ng-controller="myCtrl" class="text-center" >
     <form class="form-signin" ng-show="login">
@@ -62,6 +69,8 @@
       </div>
       <button class="btn btn-lg btn-primary btn-block" ng-click="driveLogin()">Sign in</button>
       <button class="btn btn-lg btn-secondary btn-block" ng-click = "driveRegister()">Register</button>
+      <button class="btn btn-lg btn-block btn-success" ng-click = "googlelogin()">Google Login</button>
+
       <p class="mt-5 mb-3 text-muted">&copy; 2018-2019 E6156 Microservice</p>
     </form>
 

@@ -10,13 +10,51 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
     $scope.login = 1;
     $scope.profile = null;
     $scope.profiledetail = null;
-    local1 = "http://6156.us-east-2.elasticbeanstalk.com"
+    localserver = "http://localhost:5000";
+    localstatic = "http://localhost:3000"
+    eb = "http://6156.us-east-2.elasticbeanstalk.com";
+    lambdaprofile = "https://kp1extjemk.execute-api.us-east-2.amazonaws.com/v1/6156task2";
+    s3 = "http://6156static.s3-website.us-east-2.amazonaws.com"
 
-    console.log("Controller loaded!")
+    eb = localserver;
+    s3 = localstatic;
+    var init = function () {
+        let claim = $window.sessionStorage.getItem("credentials");
+        if (claim){
+            $scope.login = 0;
+            $scope.profile = 1;
+            $scope.profiledetail = 0;
+            $scope.res = "token :" + claim;
+        }
+    }
+    init();
+    //
+    // var getUrlParam =function (parameter, defaultvalue){
+    //     var urlparameter = defaultvalue;
+    //     if($window.location.href.indexOf(parameter) > -1){
+    //         urlparameter = getUrlVars()[parameter];
+    //     }
+    //     return urlparameter;
+    // }
+    //
+    // function getUrlVars() {
+    //     var vars = {};
+    //     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+    //         vars[key] = value;
+    //     });
+    //     return vars;
+    // }
+    //
+    //
+    // let token = getUrlParam('', null)
+
+    console.log("Controller loaded!");
+
+
     $scope.driveLogin = function() {
-        console.log("In login.")
-        console.log("Email = " + $scope.email)
-        console.log("Password = " + $scope.password)
+        console.log("In login.");
+        console.log("Email = " + $scope.email);
+        console.log("Password = " + $scope.password);
         req = {
             email: $scope.email,
             pw: $scope.password
@@ -24,9 +62,9 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
 
         parameter = JSON.stringify(req);
 
-        console.log("parameter = " + parameter)
+        console.log("parameter = " + parameter);
         op = "login";
-        url = local1 + "/auth/login";
+        url = eb + "/auth/login";
 
 
         $http.post(url, parameter, {
@@ -63,7 +101,7 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
 
         console.log("parameter = " + parameter)
         op = "register";
-        url = local1 + "/auth/register";
+        url = eb + "/auth/register";
 
 
         $http.post(url, parameter, {
@@ -89,17 +127,17 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
     }
     $scope.getprofile = function() {
         console.log("help")
-        url = "https://kp1extjemk.execute-api.us-east-2.amazonaws.com/v1/6156task2"
         let claim = $window.sessionStorage.getItem("credentials");
         let config = {}
         config.headers = { "credentials": claim, 'Content-Type': 'application/json'}
-        $http.get(url, config).then(
+        $http.get(lambdaprofile, config).then(
             function(result) {
                 console.log("Result = " + JSON.stringify(result));
                 $scope.login = null;
                 $scope.profile = null;
                 $scope.profiledetail = 1;
                 $scope.customerInfo = result.data.body;
+                $scope.res = result.data.body;
                 console.log("success")
             }, function(result) {
                 console.log("fail")
@@ -122,13 +160,11 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
             address: $scope.address
         };
 
-        url = "https://kp1extjemk.execute-api.us-east-2.amazonaws.com/v1/6156task2";
-
         let claim = $window.sessionStorage.getItem("credentials");
         let config = {};
         config.headers = { "credentials": claim, 'Content-Type': 'application/json'};
 
-        $http.post(url, req, config).then(
+        $http.post(lambdaprofile, req, config).then(
             function(result) {
                 console.log("Result = " + JSON.stringify(result));
                 $scope.res = result.data.body;
@@ -144,5 +180,68 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
         );
 
     }
+
+
+    $scope.googlelogin=function() {
+        gapi.load('auth2', function() {
+            auth2 = gapi.auth2.init({
+                client_id: "1076764154881-jq0lgjdbeje9b5tsucimo3l8p48uen0v.apps.googleusercontent.com",
+                scope: "email",
+                ux_mode: "popup",
+                redirect_uri: s3
+            });
+
+            // Sign the user in, and then retrieve their ID.
+            auth2.signIn().then(function() {
+                console.log("success");
+                var profile = auth2.currentUser.get().getBasicProfile();
+                $scope.profile = 1;
+                $scope.login = 0;
+                $scope.res = 'ID: ' + profile.getId() + 'Name: ' + profile.getName() + 'Email: ' + profile.getEmail()
+                let token = auth2.currentUser.Ab.Zi.id_token
+                $scope.googleloginhulper(token);
+            }, function() {
+                    console.log("failed");
+                });
+
+
+        });
+    };
+
+    $scope.googleloginhulper = function(id_token) {
+        var xhr = new XMLHttpRequest();
+        url = eb + '/auth/google';
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            let result = xhr.responseText;
+            console.log(result);
+            console.log(typeof result)
+            result = JSON.parse(result)
+            if (result.code == 1) {
+                $scope.login = 0;
+                $scope.profile = 1;
+                $scope.profiledetail = 0;
+                $scope.$digest();
+                let authorization = result.authorization;
+                console.log(typeof authorization);
+                console.log(authorization);
+                $window.sessionStorage.setItem("credentials", authorization);
+            }
+        };
+        xhr.send('idtoken=' + id_token);
+
+    }
+
+    $scope.reloadRoute = function() {
+        $window.location.reload();
+    }
+
+    $scope.logout = function() {
+        $window.sessionStorage.removeItem('credentials');
+        $window.location.reload();
+    }
+
+
 
 });
