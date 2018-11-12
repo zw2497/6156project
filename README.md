@@ -28,11 +28,15 @@ QALite is a forum for **Qestions** and **Answers**. This website uses **Event-ce
 * AWS CloudFront: single site image and content delivery network.
 
 ## Contributor
-* Zhicheng Wu zw2497
-* Zian Zhao zz2558
-* Yipeng Zhou yz3169
-* Xinwei Zhang xz2663
-* Lin Bai lb3161
+Name | Columbia ID
+--- | ---
+Zhicheng Wu | zw2497
+Zian Zhao | zz2558
+Yipeng Zhou | yz3169
+Xinwei Zhang | xz2663
+Lin Bai | lb3161
+
+
 
 ## License
 
