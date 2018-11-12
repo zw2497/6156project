@@ -1,5 +1,6 @@
 import functools
 import jwt
+import boto3
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, Response, json
 )
@@ -47,7 +48,21 @@ def register():
                 (email, generate_password_hash(password))
             )
             db.commit()
-        return jsonify(body="Register success", code = 1)
+            sns = boto3.resource('sns', region_name='us-east-2')
+            topic = sns.Topic('arn:aws:sns:us-east-2:064845973938:ElasticBeanstalkNotifications-Environment-6156-env')
+            response = topic.publish(
+                Message='send email',
+                Subject='new register',
+                MessageAttributes={
+                    "email": {
+                        'DataType': 'String',
+                        "StringValue": email
+                    }
+                }
+            )
+        # return jsonify(body=str(response), code = 1)
+        return jsonify(body="An email will be sent to you!", code=1)
+
 
 @bp.route('/google', methods=('GET', 'POST'))
 @cross_origin()
@@ -132,23 +147,23 @@ def login():
         try:
             payload = {
                         'user_id': user['id'],
-                        'email': user['email'],
-                        'status': user['status']
+                        'email': user['email']
                         }
             token = jwt.encode(payload, 'dev', algorithm='HS256')
         except Exception as e:
             return jsonify(status = 401, msg = "invalid", code = 0)
         else:
-            data =  {'authorization': "{}".format(token.decode()), "code" : 1}
+            data =  {'authorization': "{}".format(token.decode()), "confirm" : user['status'], "code" : 1}
             js = json.dumps(data)
             resp = Response(js, status=200, mimetype='application/json')
-            # resp.headers['qwert'] = token
             return resp
 
-@bp.route('/confirm/<token>')
-def confirm_email(token):
+@bp.route('/confirm')
+def confirm_email():
+    token = request.args.get("context")
     try:
-        email = ts.loads(token, salt="dev", max_age=86400)
+        payload = jwt.decode(token, 'dev', algorithms='HS256')
+        email = payload['email']
     except:
         abort(404)
     db = get_db()
@@ -163,7 +178,7 @@ def confirm_email(token):
         abort(403)
     db.commit()
 
-    return redirect(url_for('blog.index'))
+    return jsonify(msg="email confirmation success", code=1)
 
 
 @bp.route('/oauth2callback.html')

@@ -3,20 +3,23 @@ import boto3
 import jwt
 from boto3.dynamodb.conditions import Key, Attr
 
-
-response = {
-    'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-    "statusCode": 200,
-    "body":{"code" : 1}
-}
+def response(text):
+    response = {
+        'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
+        "statusCode": 200,
+        "body":{"code" : 1}
+    }
+    response['body']['body'] = text
+    response["body"] = json.dumps(response["body"])
+    return response
 
 def error(number):
-    error = {
+    errorno = {
         'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
         "body":{"code" : 0}
     }
-    error["statusCode"] = number
-    return error
+    errorno["statusCode"] = str(number)
+    return errorno
 
 def headerCheck(event):
     try:
@@ -29,96 +32,42 @@ def headerCheck(event):
 def lambda_handler(event, context):
     if event['httpMethod'] == 'GET':
         if not headerCheck(event):
-            return error()
-                auth_header = event["headers"]["credentials"]
-                if (auth_header):
-                    try:
-                        payload = jwt.decode(auth_header, 'dev', algorithms='HS256')
-                    except:
-                        return {"statusCode": 200,
-                            'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-                            "body": json.dumps("invalid token")
-                        }
-                    else:
-                        user_id = payload["user_id"]
-                        status = payload["status"]
-                        client = boto3.resource('dynamodb')
-                        table = client.Table("6156")
-                        response = table.get_item(
-                                        Key={
-                                            'id': user_id,
-                                            'status': str(status)
-                                        }
-                                    )
-                        if 'Item' not in response:
-                            return {
-                                "statusCode": '200',
-                                "headers": { "Access-Control-Allow-Origin": "*"},
-                                "body": json.dumps("no profile1")
-                            }
-                        return {"statusCode": '200',
-                        'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": "*"},
-                            "body": str(response['Item'])
-                        }
-            else:
-                return {
-                        "statusCode": '200',
-                        "headers": { "Access-Control-Allow-Origin": "*"},
-                        "body": json.dumps("no profile2")
-                }
-
+            return error(403)
+        
+        auth_header = event["headers"]["credentials"]
+        try:
+            payload = jwt.decode(auth_header, 'dev', algorithms='HS256')
+        except:
+            return error(401)
         else:
-            return {
-                "statusCode": 200,
-               'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-                "body": json.dumps("No headers")
-            }
-    return {
-            "statusCode": 200,
-           'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-            "body": json.dumps("No data")
-        }
+            user_id = payload["user_id"]
+            client = boto3.resource('dynamodb')
+            table = client.Table("61562")
+            res = table.get_item(
+                                 Key={
+                                 'id': user_id
+                                 }
+                                 )
+                                 if 'Item' not in res:
+                                     return response("no profile")
+                                 return response(str(res['Item']))
 
-    if event['httpMethod'] == 'POST':
-        if "headers" in event:
-            if "credentials" in event["headers"]:
-                auth_header = event["headers"]["credentials"]
-                if (auth_header):
-                    try:
-                        payload = jwt.decode(auth_header, 'dev', algorithms='HS256')
-                    except:
-                        return {"statusCode": 200,
-                        'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-                            "body": "invalid token"
-                        }
-                    else:
-                        user_id = payload["user_id"]
-                        client = boto3.resource('dynamodb')
-                        table = client.Table("6156")
-                        item = {}
-                        item["id"] = int(payload["user_id"])
-                        item["status"] = str(payload["status"])
-                        item["profile"] = json.loads(event["body"])
-                        response = table.put_item(Item = item)
-                        return {"statusCode": 200,
-                                'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-                                "body": "add success"
-                        }
-            else:
-                return {
-                "statusCode": 200,
-                'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-                "body": json.dumps("No Authorization")
-            }
-
-        else:
-            return {
-                "statusCode": 200,
-                'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-                "body": event["body"]
-            }
-    return {
-        "statusCode": 200,
-        'headers': {'Content-Type': 'application/json',"Access-Control-Allow-Origin": '*'},
-        "body": json.dumps("No Authorization")
-    }
+if event['httpMethod'] == 'POST':
+    if not headerCheck(event):
+        return error(403)
+        
+        auth_header = event["headers"]["credentials"]
+        
+        try:
+            payload = jwt.decode(auth_header, 'dev', algorithms='HS256')
+        except:
+            return error(401)
+    else:
+        user_id = payload["user_id"]
+        client = boto3.resource('dynamodb')
+        table = client.Table("61562")
+        item = {}
+            item["id"] = int(payload["user_id"])
+            item["profile"] = event["body"]
+            res = table.put_item(Item = item)
+            return response("success add")

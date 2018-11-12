@@ -10,6 +10,7 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
     $scope.login = 1;
     $scope.profile = null;
     $scope.profiledetail = null;
+    $scope.logo = null;
     localserver = "http://localhost:5000";
     localstatic = "http://localhost:3000"
     eb = "http://6156.us-east-2.elasticbeanstalk.com";
@@ -73,7 +74,7 @@ CustomerApp.controller("myCtrl", function($scope, $http, $location, $window) {
             }
         }).then(
             function(result) {
-                $scope.res = "Token:" + result.data.authorization;
+                $scope.res = "Token:" + result.data.authorization + "confirm:" + result.data.confirm;
                 if (result.data.code == 1) {
                     $scope.login = 0;
                     $scope.profile = 1;
